@@ -67,11 +67,25 @@ server.put('/api/dogs/:id', async (req, res) => {
 try {
     const {id} = req.params
     const {name, weight} = req.body
-    const updatedDog = await Dog.update(id, {name, weight})
-    res.status(200).json({
-        message: 'dog was updated successfully',
-        data: updatedDog,
-    })
+    if (!name || !weight) {
+         res.status(422).json({
+           message: "dogs need name and weight",
+         })
+
+    } else {
+        const updatedDog = await Dog.update(id, { name, weight })
+        console.log('updated dog', updatedDog)
+        if(!updatedDog) {
+            res.status(404).json({
+                message: `dog ${id} not found, sorry`
+            })
+        } else {
+            res.status(200).json({
+              message: "dog was updated successfully",
+              data: updatedDog,
+            });
+        }
+}
 
 } catch(err) {
     res.status(500).json({
@@ -79,7 +93,32 @@ try {
     });
 }
 })
-// [DELETE] /api/dogs/:id (D of CRUD, remove dog with :id)/////
+// [DELETE] /api/dogs/:id (D of CRUD, remove dog with :id)
+server.delete('/api/dogs/:id', async (req, res) => {
+ try {
+    const {id} = req.params
+    const deletedDog = await Dog.delete(id)
+    if(!deletedDog) {
+        res.status(404).json({
+            message: `dog id ${id} not found`
+        })
+    } else {
+        res.json({
+            message: 'dog deleted',
+            data: deletedDog,
+        })
+    }
+    
+
+   
+
+ } catch(err) {
+      res.status(500).json({
+        message: `Error updating dog: ${err.message}`,
+        
+      })
+ }
+})
 
 // EXPOSING THE SERVER TO OTHER MODULES
 module.exports = server 
